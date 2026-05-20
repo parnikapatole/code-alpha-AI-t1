@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polyglot Translator</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Poppins',sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      overflow:hidden;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:
+      radial-gradient(circle at top left,#1e1e2f,#0f0f1b 60%),
+      linear-gradient(135deg,#151525,#202040);
+      position:relative;
+      padding:20px;
+    }
+
+    /* =========================
+       LOADING SCREEN
+    ========================= */
+
+    .loader-screen{
+      position:fixed;
+      inset:0;
+      background:#0f0f1b;
+      z-index:99999;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+      animation:loaderFade 1s ease forwards;
+      animation-delay:3s;
+    }
+
+    .loader-ring{
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      border:6px solid rgba(255,255,255,0.1);
+      border-top:6px solid #8f94fb;
+      margin-bottom:30px;
+      animation:spin 1s linear infinite;
+    }
+
+    .loader-title{
+      font-size:4rem;
+      font-weight:700;
+      color:white;
+      margin-bottom:10px;
+      text-shadow:0 0 25px rgba(255,255,255,0.4);
+    }
+
+    .loader-sub{
+      color:#b8b8ff;
+      font-size:1.1rem;
+      letter-spacing:4px;
+      text-transform:uppercase;
+    }
+
+    @keyframes spin{
+      100%{
+        transform:rotate(360deg);
+      }
+    }
+
+    @keyframes loaderFade{
+      to{
+        opacity:0;
+        visibility:hidden;
+      }
+    }
+
+    /* =========================
+       FALLING TEXT BACKGROUND
+    ========================= */
+
+    .background{
+      position:absolute;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      top:0;
+      left:0;
+      z-index:0;
+    }
+
+    .background span{
+      position:absolute;
+      top:-120px;
+      color:rgba(255,255,255,0.08);
+      font-size:2rem;
+      font-weight:600;
+      animation:fall linear infinite;
+      user-select:none;
+      text-shadow:0 0 15px rgba(255,255,255,0.2);
+    }
+
+    .background span:nth-child(1){
+      left:5%;
+      animation-duration:10s;
+      font-size:2.5rem;
+    }
+
+    .background span:nth-child(2){
+      left:15%;
+      animation-duration:13s;
+    }
+
+    .background span:nth-child(3){
+      left:25%;
+      animation-duration:9s;
+      font-size:3rem;
+    }
+
+    .background span:nth-child(4){
+      left:35%;
+      animation-duration:14s;
+    }
+
+    .background span:nth-child(5){
+      left:45%;
+      animation-duration:11s;
+    }
+
+    .background span:nth-child(6){
+      left:55%;
+      animation-duration:15s;
+      font-size:2.8rem;
+    }
+
+    .background span:nth-child(7){
+      left:65%;
+      animation-duration:12s;
+    }
+
+    .background span:nth-child(8){
+      left:75%;
+      animation-duration:10s;
+    }
+
+    .background span:nth-child(9){
+      left:85%;
+      animation-duration:16s;
+    }
+
+    .background span:nth-child(10){
+      left:95%;
+      animation-duration:13s;
+    }
+
+    @keyframes fall{
+      0%{
+        transform:translateY(-120px) rotate(0deg);
+        opacity:0;
+      }
+
+      10%{
+        opacity:1;
+      }
+
+      100%{
+        transform:translateY(120vh) rotate(360deg);
+        opacity:0;
+      }
+    }
+
+    /* =========================
+       MAIN CONTAINER
+    ========================= */
+
+    .container{
+      width:100%;
+      max-width:980px;
+      text-align:center;
+      position:relative;
+      z-index:2;
+    }
+
+    h1{
+      font-size:4rem;
+      color:white;
+      margin-bottom:25px;
+      font-weight:700;
+      text-shadow:0 0 20px rgba(255,255,255,0.25);
+    }
+
+    .translator-box{
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.12);
+      backdrop-filter:blur(18px);
+      padding:35px;
+      border-radius:30px;
+      box-shadow:
+      0 10px 40px rgba(0,0,0,0.35),
+      inset 0 0 15px rgba(255,255,255,0.05);
+      transition:0.4s ease;
+    }
+
+    .translator-box:hover{
+      transform:translateY(-5px);
+      box-shadow:
+      0 15px 50px rgba(0,0,0,0.45),
+      inset 0 0 20px rgba(255,255,255,0.06);
+    }
+
+    /* =========================
+       LANGUAGE ROW
+    ========================= */
+
+    .lang-row{
+      display:flex;
+      align-items:center;
+      gap:15px;
+      margin-bottom:30px;
+    }
+
+    select{
+      flex:1;
+      padding:16px;
+      border:none;
+      border-radius:18px;
+      font-size:1rem;
+      background:rgba(255,255,255,0.12);
+      color:white;
+      outline:none;
+      backdrop-filter:blur(10px);
+      box-shadow:0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    select option{
+      background:#1d1d2f;
+      color:white;
+    }
+
+    .swap-btn{
+      width:60px;
+      height:60px;
+      border-radius:50%;
+      border:none;
+      cursor:pointer;
+      background:linear-gradient(135deg,#8f94fb,#4e54c8);
+      color:white;
+      font-size:1.3rem;
+      box-shadow:0 0 20px rgba(143,148,251,0.5);
+      transition:0.4s;
+    }
+
+    .swap-btn:hover{
+      transform:rotate(180deg) scale(1.08);
+    }
+
+    /* =========================
+       TEXT BOXES
+    ========================= */
+
+    .text-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:22px;
+      margin-bottom:30px;
+    }
+
+    .box{
+      background:rgba(255,255,255,0.09);
+      border-radius:25px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.08);
+      box-shadow:0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    textarea{
+      width:100%;
+      height:240px;
+      border:none;
+      resize:none;
+      padding:22px;
+      font-size:1rem;
+      background:transparent;
+      outline:none;
+      color:white;
+      line-height:1.7;
+    }
+
+    textarea::placeholder{
+      color:rgba(255,255,255,0.55);
+    }
+
+    .box-footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 18px;
+      background:rgba(255,255,255,0.05);
+      border-top:1px solid rgba(255,255,255,0.05);
+    }
+
+    #charCount{
+      color:#ddd;
+    }
+
+    .right-icons{
+      margin-left:auto;
+      display:flex;
+      gap:18px;
+    }
+
+    .icon-btn{
+      cursor:pointer;
+      color:white;
+      font-size:1.15rem;
+      transition:0.3s;
+    }
+
+    .icon-btn:hover{
+      transform:scale(1.2);
+      color:#8f94fb;
+    }
+
+    /* =========================
+       TRANSLATE BUTTON
+    ========================= */
+
+    .translate-btn{
+      width:100%;
+      padding:18px;
+      font-size:1.1rem;
+      border:none;
+      border-radius:18px;
+      background:linear-gradient(135deg,#8f94fb,#4e54c8);
+      color:white;
+      cursor:pointer;
+      font-weight:600;
+      letter-spacing:1px;
+      box-shadow:0 10px 25px rgba(78,84,200,0.4);
+      transition:0.4s;
+    }
+
+    .translate-btn:hover{
+      transform:translateY(-3px) scale(1.01);
+      box-shadow:0 15px 35px rgba(78,84,200,0.6);
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media(max-width:850px){
+
+      h1{
+        font-size:2.7rem;
+      }
+
+      .text-row{
+        grid-template-columns:1fr;
+      }
+
+      .lang-row{
+        flex-direction:column;
+      }
+
+      .swap-btn{
+        transform:rotate(90deg);
+      }
+
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- LOADING SCREEN -->
+
+  <div class="loader-screen">
+    <div class="loader-ring"></div>
+    <div class="loader-title">Polyglot</div>
+    <div class="loader-sub">Loading Translator...</div>
+  </div>
+
+  <!-- FALLING LANGUAGE BACKGROUND -->
+
+  <div class="background">
+    <span>Hello</span>
+    <span>नमस्ते</span>
+    <span>Bonjour</span>
+    <span>Hola</span>
+    <span>こんにちは</span>
+    <span>안녕하세요</span>
+    <span>Ciao</span>
+    <span>मराठी</span>
+    <span>Translate</span>
+    <span>语言</span>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+
+  <div class="container">
+
+    <h1>Polyglot Translator</h1>
+
+    <div class="translator-box">
+
+      <div class="lang-row">
+
+        <select id="fromLang">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="mr">Marathi</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+          <option value="it">Italian</option>
+          <option value="ko">Korean</option>
+          <option value="ja">Japanese</option>
+        </select>
+
+        <button class="swap-btn" onclick="swapLanguages()">
+          <i class="fas fa-exchange-alt"></i>
+        </button>
+
+        <select id="toLang">
+          <option value="hi">Hindi</option>
+          <option value="en">English</option>
+          <option value="mr">Marathi</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+          <option value="it">Italian</option>
+          <option value="ko">Korean</option>
+          <option value="ja">Japanese</option>
+        </select>
+
+      </div>
+
+      <div class="text-row">
+
+        <!-- INPUT BOX -->
+
+        <div class="box">
+
+          <textarea
+            id="inputText"
+            maxlength="500"
+            placeholder="Enter text here..."
+          ></textarea>
+
+          <div class="box-footer">
+
+            <i class="fas fa-volume-up icon-btn" onclick="speakInput()"></i>
+
+            <span id="charCount">0 / 500</span>
+
+          </div>
+
+        </div>
+
+        <!-- OUTPUT BOX -->
+
+        <div class="box">
+
+          <textarea
+            id="outputText"
+            readonly
+            placeholder="Translation will appear here..."
+          ></textarea>
+
+          <div class="box-footer">
+
+            <div class="right-icons">
+
+              <i class="fas fa-volume-up icon-btn" onclick="speakOutput()"></i>
+
+              <i class="fas fa-copy icon-btn" onclick="copyOutput()"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <button class="translate-btn" onclick="translateText()">
+        Translate Now
+      </button>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    const inputText = document.getElementById("inputText");
+    const outputText = document.getElementById("outputText");
+    const charCount = document.getElementById("charCount");
+
+    let voices = [];
+    let maleVoice = null;
+
+    function loadVoices() {
+
+      voices = speechSynthesis.getVoices();
+
+      maleVoice =
+        voices.find(v =>
+          v.name.toLowerCase().includes("male") ||
+          v.name.toLowerCase().includes("david") ||
+          v.name.toLowerCase().includes("mark")
+        ) || voices[0];
+
+    }
+
+    speechSynthesis.onvoiceschanged = loadVoices;
+
+    loadVoices();
+
+    inputText.addEventListener("input", () => {
+
+      charCount.textContent =
+      `${inputText.value.length} / 500`;
+
+    });
+
+    function swapLanguages() {
+
+      const from = document.getElementById("fromLang");
+      const to = document.getElementById("toLang");
+
+      [from.value, to.value] =
+      [to.value, from.value];
+
+    }
+
+    async function translateText() {
+
+      let text = inputText.value.trim();
+
+      if (!text)
+      return alert("Please enter text");
+
+      const from =
+      document.getElementById("fromLang").value;
+
+      const to =
+      document.getElementById("toLang").value;
+
+      outputText.value = "Translating...";
+
+      try {
+
+        const url =
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+
+        const response = await fetch(url);
+
+        const data = await response.json();
+
+        outputText.value =
+        data[0].map(item => item[0]).join("");
+
+      }
+
+      catch {
+
+        outputText.value = "";
+
+        alert("Translation failed");
+
+      }
+
+    }
+
+    function getVoiceForLanguage(lang){
+
+      return voices.find(v =>
+      v.lang.startsWith(lang))
+      || voices[0];
+
+    }
+
+    function speakInput() {
+
+      if (!inputText.value.trim()) return;
+
+      speechSynthesis.cancel();
+
+      const utterance =
+      new SpeechSynthesisUtterance(inputText.value);
+
+      utterance.voice = maleVoice;
+      utterance.rate = 0.9;
+      utterance.pitch = 0.8;
+
+      speechSynthesis.speak(utterance);
+
+    }
+
+    function speakOutput() {
+
+      if (!outputText.value.trim()) return;
+
+      const lang =
+      document.getElementById("toLang").value;
+
+      speechSynthesis.cancel();
+
+      const utterance =
+      new SpeechSynthesisUtterance(outputText.value);
+
+      utterance.voice =
+      getVoiceForLanguage(lang);
+
+      utterance.lang = lang;
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+
+      speechSynthesis.speak(utterance);
+
+    }
+
+    function copyOutput() {
+
+      if (!outputText.value) return;
+
+      navigator.clipboard.writeText(outputText.value)
+
+      .then(() => {
+
+        alert("Copied!");
+
+      })
+
+      .catch(() => {
+
+        alert("Copy failed");
+
+      });
+
+    }
+
+  </script>
+
+</body>
+</html>
